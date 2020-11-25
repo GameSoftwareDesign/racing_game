@@ -43,14 +43,14 @@ from TabbedFrame import TabbedFrame
 from panda3d.core import loadPrcFileData
 
 # Globally change window title name
-gameTitle = "Animal Racers"
+gameTitle = "Bunny Bunny"
 loadPrcFileData("", f"window-title {gameTitle}")
 
 class Game(ShowBase):
     fonts = {}
     selectedTrack = "random.track"
-    selectedCar = "groundroamer"
-    selectedPassenger = "penguin"
+    selectedCar = "truck_blue"
+    selectedPassenger = "bunny"
     level = "medium"
 
     currentState = None
@@ -59,14 +59,11 @@ class Game(ShowBase):
 Collect the powerups, and beat all the other cars to win! 
 - Shield: You don't slow down when you hit the walls.
 - Speed: Speed boost!
-
 [WASD/Arrow Keys] Drive
 [Hold Space] Drift (while driving)
-
 [1, 2, 3] Change camera view
 [Hold C] Look behind
 [Hold V] Look around
-
 [P] Pause and show help
 [M] Mute main music and sfx
 [R] Restart Game
@@ -74,8 +71,8 @@ Collect the powerups, and beat all the other cars to win!
 
     def __init__(self):
         ShowBase.__init__(self)
-        
-        Game.fonts["AmericanCaptain"] = loader.loadFont('AmericanCaptain.ttf')
+
+        Game.fonts["Action_Man"] = loader.loadFont('Action_Man.ttf')
 
         self.helpDialog = HelpDialog()
 
@@ -109,7 +106,7 @@ class HelpDialog():
     def __init__(self):
         self.components = []
         self.hidden = False
-        
+
         try:
             self.bg = OnscreenImage(
                 image="img/startscreen.png",
@@ -118,7 +115,7 @@ class HelpDialog():
         except:
             print("img/startscreen.png not found. Get it from Github.")
             self.bg = None
-            
+
         self.components.append(self.bg)
 
         # Construct our TabbedFrame
@@ -128,7 +125,7 @@ class HelpDialog():
 
         # Adapted from https://github.com/ArsThaumaturgis/TabbedFrame/blob/master/TabbedFrameExample.py
 
-        font = Game.fonts["AmericanCaptain"]
+        font = Game.fonts["Action_Man"]
 
         # Controls
         page1 = DirectFrame()
@@ -136,11 +133,9 @@ class HelpDialog():
         text.setText("""\
 [WASD/Arrow Keys] Drive
 [Hold Space] Drift (while driving)
-
 [1, 2, 3] Change camera view
 [Hold C] Look behind
 [Hold V] Look around
-
 [P] Pause and show help
 [M] Mute main music and sfx
 [R] Restart Game
@@ -160,7 +155,6 @@ class HelpDialog():
         text.setText("""\
 [Bolt] Speed boost!
 [Shield] You don't slow down when you hit the walls. Instead you slide smoothly along them
-
 Note: Powerups last for 5 seconds.
 """)
 
@@ -176,19 +170,13 @@ Note: Powerups last for 5 seconds.
         page3 = DirectFrame()
         text = TextNode("text")
         text.setText("""\
-Details on Github (Samleo8/112AnimalRacers)
-
+Details on Github (Samleo8/RacingGame)
 [3D Models]
 Jeep Model by bigcrazycarboy
 Lightning Bolt by Savino
 All other models from the Alice Gallery
-
 [Audio]
 Main music adapted from Purple Passion by Diana Boncheva
-
-[Fonts]
-American Captain by The Fontry
-
 [Code Reference]
 Panda 3D Manual
 Panda 3D API Reference
@@ -209,13 +197,13 @@ Panda 3D forums
         self.frame.addPage(page1, "Controls")
         self.frame.addPage(page2, "Powerups")
         self.frame.addPage(page3, "Credits")
- 
-        self.components += self.frame.pageButtons  
+
+        self.components += self.frame.pageButtons
 
         self.components.append(self.frame)
 
         self.nextButton = DirectButton(
-            text="Next", text_font=Game.fonts["AmericanCaptain"],
+            text="Next", text_font=Game.fonts["Action_Man"],
             scale=0.10, command=self.hide,
             pad=(0.3, 0.3),
             pos=(0, 0, -0.75),
@@ -225,7 +213,7 @@ Panda 3D forums
 
         self.buttonHelperText = OnscreenText(
             text='[P]', pos=(0, -0.87), scale=0.07,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=True,
             bg=(182, 182, 182, 0.5),
         )
@@ -267,29 +255,13 @@ class StartScreen(Game):
 
         title = OnscreenText(
             text=gameTitle, pos=(0, 0.3), scale=0.32,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False
         )
 
-        text = OnscreenText(
-            text='Difficulty:', pos=(-0.1, 0), scale=0.1,
-            font=Game.fonts["AmericanCaptain"], bg=(255, 255, 255, 0.1),
-            align=TextNode.ARight, mayChange=False
-        )
-
-        menu = DirectOptionMenu(
-            scale=0.12,
-            items=[ "Easy", "Medium", "Hard" ], initialitem=1,
-            highlightColor=(10, 10, 10, 1),
-            pad=(10, 10),
-            pos=(0, 0, 0),
-            popupMenu_pos=(-0.5, 0, 0),
-            command=self.changeLevel,
-            text_scale=0.8
-        )
 
         startGameButton = DirectButton(
-            text="Start  Game", text_font=Game.fonts["AmericanCaptain"],
+            text="Start  Game", text_font=Game.fonts["Action_Man"],
             scale=0.15, command=self.startGame,
             pad=(0.3, 0.3),
             pos=(0, 0, -0.32)
@@ -297,19 +269,11 @@ class StartScreen(Game):
 
         spaceShortcut = OnscreenText(
             text='[Space]', pos=(0, -0.49), scale=0.08,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False,
             bg=(182, 182, 182, 0.5)
         )
 
-        '''
-        helpButton = DirectButton(
-            text="Help", text_font=Game.fonts["AmericanCaptain"],
-            scale=0.15, command=self.showHelp,
-            pad=(0.3, 0.3),
-            pos=(0, 0, -0.45)
-        )
-        '''
 
         # Instructions
         helpText = """\
@@ -320,7 +284,7 @@ Hold V to look around | R to Restart
         OnscreenText(
             text=helpText, pos=(0, -0.7), scale=0.1,
             bg=(255,255,255,0.7), wordwrap=20,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False
         )
 
@@ -328,8 +292,9 @@ Hold V to look around | R to Restart
         self.accept("space-up", self.startGame)
 
     def startGame(self):
-        self.nextState("RacetrackSelection")
-
+        #self.nextState("RacetrackSelection")
+        #jesnk
+        self.nextState("game")
     def changeLevel(self, level):
         Game.level = level.lower()
 
@@ -346,12 +311,12 @@ class RacetrackSelection(Game):
 
         title = OnscreenText(
             text='Select your Racetrack!', pos=(0, 0.65), scale=0.18,
-            font=Game.fonts["AmericanCaptain"], bg=(255, 255, 255, 1),
+            font=Game.fonts["Action_Man"], bg=(255, 255, 255, 1),
             align=TextNode.ACenter, mayChange=False
         )
 
         nextButton = DirectButton(
-            text="Next", text_font=Game.fonts["AmericanCaptain"],
+            text="Next", text_font=Game.fonts["Action_Man"],
             scale=0.10, command=self.selectCar,
             pad=(0.3, 0.3),
             pos=(0, 0, -0.8)
@@ -359,7 +324,7 @@ class RacetrackSelection(Game):
 
         spaceShortcut = OnscreenText(
             text='[Space]', pos=(0, -0.93), scale=0.07,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False,
             bg=(182, 182, 182, 0.5),
         )
@@ -369,7 +334,7 @@ class RacetrackSelection(Game):
 
         initialItem = self.tracks.index(Game.selectedTrack)
 
-        # Minimap!        
+        # Minimap!
         points = Racetrack.parseTrackFile(Game.selectedTrack)
         self.minimap = Minimap(points, renderer=self.render)
 
@@ -378,7 +343,7 @@ class RacetrackSelection(Game):
         self.menu = DirectOptionMenu(
             scale=0.15,
             items=self.tracks, initialitem=initialItem,
-            highlightColor=(10, 10, 10, 1), 
+            highlightColor=(10, 10, 10, 1),
             pad=(10, 10),
             pos=(-0.5, 0, 0.35),
             popupMenu_pos=(-0.5, 0, 0.2),
@@ -387,13 +352,13 @@ class RacetrackSelection(Game):
 
         helperText = OnscreenText(
             text='Click and drag anywhere to view the 3D track!', pos=(0, -0.6), scale=0.08,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False,
             bg=(182, 182, 182, 0.5),
         )
 
         randomiseButton = DirectButton(
-            text="New Random Track", text_font=Game.fonts["AmericanCaptain"],
+            text="New Random Track", text_font=Game.fonts["Action_Man"],
             scale=0.10, command=self.randomiseTrack,
             pad=(0.3, 0.3),
             pos=(-0.9, 0, 0.35)
@@ -401,14 +366,14 @@ class RacetrackSelection(Game):
 
         self.randomText = OnscreenText(
             text='', pos=(-0.9, 0.20), scale=0.07,
-            font=Game.fonts["AmericanCaptain"],
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=True,
             bg=(182, 182, 182, 0.5),
         )
 
         # Next frame without clicking
         self.accept("space-up", self.selectCar)
-        
+
         # Add task to spin camera
         #self.taskMgr.add(self.trackShowcase, "TrackShowcase")
 
@@ -466,86 +431,10 @@ class RacetrackSelection(Game):
 
             for f in os.listdir(path):
                 tracks += self.findTracks(path + "/" + f)
-            
+
             return tracks
         else:
             return []
-
-class RacecarSelection(Game):
-    def __init__(self):
-        ShowBase.__init__(self)
-
-        title = OnscreenText(
-            text='Select your Racecar and Passenger!', pos=(0, 0.7), scale=0.18,
-            font=Game.fonts["AmericanCaptain"], bg=(255, 255, 255, 1),
-            align=TextNode.ACenter, mayChange=False
-        )
-
-        nextButton = DirectButton(
-            text="Next", text_font=Game.fonts["AmericanCaptain"],
-            scale=0.10, command=self.startGame,
-            pad=(0.3, 0.3),
-            pos=(0, 0, -0.8)
-        )
-
-        spaceShortcut = OnscreenText(
-            text='[Space]', pos=(0, -0.93), scale=0.07,
-            font=Game.fonts["AmericanCaptain"],
-            align=TextNode.ACenter, mayChange=False,
-            bg=(182, 182, 182, 0.5),
-        )
-
-        # Get List of cars
-        self.cars = self.findCarsOrPassengers("models", "car_")
-
-        initialCar = self.cars.index(Game.selectedCar)
-
-        text = OnscreenText(
-            text='Racecar:', pos=(-0.55, 0.4), scale=0.1,
-            font=Game.fonts["AmericanCaptain"], bg=(255, 255, 255, 1),
-            align=TextNode.ARight, mayChange=False
-        )
-
-        menu = DirectOptionMenu(
-            scale=0.15,
-            items=self.cars, initialitem=initialCar,
-            highlightColor=(10, 10, 10, 1),
-            pad=(10, 10),
-            pos=(-0.5, 0, 0.4),
-            command=self.selectCar
-        )
-
-        # Get List of passengers
-        self.passengers = self.findCarsOrPassengers("models", "passenger_")
-
-        initialPassenger = self.passengers.index(Game.selectedPassenger)
-    
-        text = OnscreenText(
-            text='Passenger:', pos=(-0.55, 0.2), scale=0.1,
-            font=Game.fonts["AmericanCaptain"], bg=(255, 255, 255, 1),
-            align=TextNode.ARight, mayChange=False
-        )
-
-        menu = DirectOptionMenu(
-            scale=0.15,
-            items=self.passengers, initialitem=initialPassenger,
-            highlightColor=(10, 10, 10, 1),
-            pad=(10, 10),
-            pos=(-0.5, 0, 0.2),
-            command=self.selectPassenger
-        )
-
-        # If drawing is needed, passenger needs to be selected first
-        self.displayedCar = None
-
-        self.selectPassenger(self.passengers[initialPassenger])
-        self.selectCar(self.cars[initialCar])
-
-        # Next frame without clicking
-        self.accept("space-up", self.startGame)
-
-        # Add task to spin camera
-        self.taskMgr.add(self.carShowcase, "CarShowcase")
 
     # Define a procedure to move the camera.
     def carShowcase(self, task):
@@ -560,25 +449,6 @@ class RacecarSelection(Game):
         )
         self.camera.setHpr(radToDeg(angle), 0, 0)
         return Task.cont
-
-    def selectCar(self, car):
-        Game.selectedCar = car
-
-        if self.displayedCar != None:
-            self.displayedCar.destroy()
-
-        pos = (0, 0, 0)
-        self.displayedCar = DisplayCar(
-            self, Game.selectedCar, Game.selectedPassenger, self.render, pos=pos
-        )
-
-        self.camera.setPos(10, 10, 10)
-        self.camera.lookAt(pos)
-
-    def selectPassenger(self, passenger):
-        Game.selectedPassenger = passenger
-
-        self.selectCar(Game.selectedCar)
 
     def findCarsOrPassengers(self, path, prefix=""):
         items = []
@@ -625,18 +495,12 @@ class RacingGame(Game):
         self.helpDialog.hide()
         self.helpDialog.nextButton["command"] = self.togglePause
 
-        self.totalLaps = 3
+        self.totalLaps = 1
 
         Obj3D.worldRenderer = self.render
 
         # Generate texts
         self.texts = {}
-
-        self.texts["lap"] = OnscreenText(
-            text=f'Lap 1/{self.totalLaps}', pos=(-1.25, 0.8), scale=0.15,
-            bg=(255, 255, 255, 0.7), font=Game.fonts["AmericanCaptain"],
-            align=TextNode.ALeft, mayChange=True
-        )
 
         # Load collision handlers
         self.collisionSetup(showCollisions=False)
@@ -663,7 +527,7 @@ class RacingGame(Game):
         self.camConfig = self.camConfigDefault
         self.taskMgr.add(self.setCameraToPlayer, "SetCameraToPlayer")
 
-        # Check for key presses 
+        # Check for key presses
         # And do corresponding action
         self.taskMgr.add(self.keyPressHandler, "KeyPressHandler")
 
@@ -674,7 +538,7 @@ class RacingGame(Game):
         # Focus on winning car when gameover
         player = self.player \
             if not self.isGameOver else self.winningCar
-        
+
         x, y, z = player.getPos()
         h, p, r = player.getHpr()
 
@@ -694,7 +558,7 @@ class RacingGame(Game):
         if "_rotate" in self.camConfig:
             if self.isGameOver and self.gameOverTime == 0:
                 self.gameOverTime = task.time
-            
+
             theta = (task.time - self.gameOverTime) * 2.5 + degToRad(h)
 
             # Stop rotation after n rotations
@@ -719,7 +583,7 @@ class RacingGame(Game):
         elif self.camConfig == "firstPerson":
             camDistance = self.player.passenger.offsetY + self.player.passenger.dimY
             camDistance *= -1
-            
+
             camHeight = self.player.passenger.offsetZ + self.player.dimZ/2
 
             phi = -10
@@ -743,7 +607,7 @@ class RacingGame(Game):
         yOffset = -camDistance * math.cos(theta)
 
         self.camera.setPos(x + xOffset, y + yOffset, z + camHeight)
-        
+
         # Look forward a bit
         # Remember to calculate the perspective offset accordingly
         if "perspective" in self.camConfig:
@@ -765,23 +629,19 @@ class RacingGame(Game):
     def gameOver(self, car):
         self.isGameOver = True
         self.winningCar = car
-        
-        if car.id == 0: # player
-            winMsg = f"Yay! You have won the game, beating {Racecar.nRacecars-1} other cars!"
-        else:
-            winMsg = f"Oh no! You have been beaten by car {car.id+1}!"
 
-        self.texts["lap"].destroy()
+        if car.id == 0: # player
+            winMsg = f"You succeeded in escaping the maze!"
 
         self.texts["gameOver"] = OnscreenText(
             text=winMsg, pos=(0, 0.8), scale=0.15,
-            bg=(255, 255, 255, 0.7), wordwrap=20, 
-            font=Game.fonts["AmericanCaptain"],
+            bg=(255, 255, 255, 0.7), wordwrap=20,
+            font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False
         )
 
         startGameButton = DirectButton(
-            text="Restart Game", text_font=Game.fonts["AmericanCaptain"],
+            text="Restart Game", text_font=Game.fonts["Action_Man"],
             scale=0.15, command=self.restartGame,
             pad=(0.3, 0.3),
             pos=(0, 0, -0.75)
@@ -822,7 +682,7 @@ class RacingGame(Game):
         bgAudio.setVolume(0.05)
 
         bgAudio.play()
-        
+
         self.audio["bg"] = bgAudio
 
     # Load lights
@@ -879,21 +739,6 @@ class RacingGame(Game):
         self.player = Racecar(self, Game.selectedCar, Game.selectedPassenger, self.render)
         self.cars.append(self.player)
 
-        # Basic levels
-        # TODO: Maybe more cars (easy to add)?
-        if Game.level == "easy":
-            car1 = NotSoStupidCar(self, "racecar", 'bunny', self.render)
-            car2 = NotSoStupidCar(self, "jeep", "chicken", self.render)
-        elif Game.level == "hard":
-            car1 = SmartGreedyCar(self, "groundroamer", "bunny", self.render)
-            car2 = SmartGreedyCar(self, "jeep", "chicken", self.render)
-        else: # normal level
-            car1 = SmartCar(self, "groundroamer", 'bunny', self.render)
-            car2 = SmartGreedyCar(self, "jeep", "chicken", self.render)
-
-        self.cars.append(car1)
-        self.cars.append(car2)
-
         if self.printStatements: print(f"Opponent cars generated with difficulty {Game.level}")
 
     def loadMinimap(self):
@@ -936,7 +781,7 @@ class RacingGame(Game):
     # Key Events
     def createKeyControls(self):
         # Create a function to key maps
-        # "<function>": [ <list of key ids> ]   
+        # "<function>": [ <list of key ids> ]
         functionToKeys = {
             "forward": [ "arrow_up", "w" ],
             "backward": [ "arrow_down", "s" ],
@@ -990,7 +835,7 @@ class RacingGame(Game):
         # the function still runs
         self.isKeyDown[key] += value
 
-        # Make sure we don't go 
+        # Make sure we don't go
         # below 0 for any reason
         if self.isKeyDown[key] < 0:
             self.isKeyDown[key] = 0
@@ -1008,7 +853,7 @@ class RacingGame(Game):
         #       we cannot use elif
 
         if self.paused or self.isGameOver:
-            return Task.cont    
+            return Task.cont
 
         player = self.player
 
@@ -1019,7 +864,7 @@ class RacingGame(Game):
 
         if self.isKeyDown["forward"] > 0:
             player.doDrive("forward")
-            
+
         if self.isKeyDown["backward"] > 0:
             player.doDrive("backward")
 
@@ -1031,7 +876,7 @@ class RacingGame(Game):
 
         if self.isKeyDown["camConfigRotate"] > 0:
             self.camConfig += "_rotate"
-        else: 
+        else:
             self.camConfig = self.camConfig.replace("_rotate", "")
 
         if self.isKeyDown["camConfigBehind"] > 0:
@@ -1050,7 +895,8 @@ class RacingGame(Game):
             base.cTrav.showCollisions(render)
 
         # Set bitmasks
-        # Reference: https://www.panda3d.org/manual/?title=Bitmask_Example
+        # Reference: https://www.panda3d.org/manual/?ti
+        # tle=Bitmask_Example
         self.colBitMask = {
             "off": BitMask32.allOff(),
             "wall": BitMask32.bit(0),

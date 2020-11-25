@@ -69,7 +69,7 @@ class Racecar(Obj3D):
         )
 
         # Passenger's positions need to be adjusted to the actual center of the object
-        self.passenger.scaleAll(2.5)
+        self.passenger.scaleAll(1)
 
         self.passenger.move(dx=self.relOffsetX,
                             dy=self.relOffsetY,
@@ -277,11 +277,6 @@ class Racecar(Obj3D):
 
             # Check win condition
             totalLaps = self.gameObj.totalLaps
-
-            # Player, so update on screen text
-            if self.id == 0:
-                self.gameObj.texts["lap"].setText(
-                    f'Lap {self.currLap+1}/{totalLaps}')
 
             if self.currLap >= totalLaps:
                 self.gameObj.gameOver(self)

@@ -126,12 +126,14 @@ class Obj3D(object):
 
         self.setRenderParent(self.renderParent)
 
-        # Set positions/rotations
+        # Set positions/rotations/scale
         self.pos = pos \
             if pos != None else (0, 0, 0)
 
         self.hpr = hpr \
             if hpr != None else (0, 0, 0)
+
+
 
         x, y, z = self.pos
         h, p, r = self.hpr
