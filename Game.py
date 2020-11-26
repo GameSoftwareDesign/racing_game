@@ -29,15 +29,11 @@ from Obj3D import *
 from Racecar import *
 from Racetrack import *
 from Terrain import *
-from Powerup import *
-from Minimap import *
 
 from RacetrackGenerator import *
 
-# CameraController from https://discourse.panda3d.org/t/another-camera-controller-orbit-style/11545
 from CameraController import *
 
-# TabbedFrame from https://github.com/ArsThaumaturgis/TabbedFrame
 from TabbedFrame import TabbedFrame
 
 from panda3d.core import loadPrcFileData
@@ -56,9 +52,6 @@ class Game(ShowBase):
     currentState = None
 
     instructionsText = """\
-Collect the powerups, and beat all the other cars to win! 
-- Shield: You don't slow down when you hit the walls.
-- Speed: Speed boost!
 [WASD/Arrow Keys] Drive
 [Hold Space] Drift (while driving)
 [1, 2, 3] Change camera view
@@ -89,10 +82,6 @@ Collect the powerups, and beat all the other cars to win!
             StartScreen()
         elif state in [ "game", "racing", "racinggame", "main" ]:
             RacingGame()
-        elif state in [ "racetrackselection", "racetrack", "track" ]:
-            RacetrackSelection()
-        elif state in ["racecarselection", "racecar", "car" ]:
-            RacecarSelection()
         elif state in [ "instructions", "help" ]:
             InstructionsScreen()
         else:
@@ -107,14 +96,11 @@ class HelpDialog():
         self.components = []
         self.hidden = False
 
-        try:
-            self.bg = OnscreenImage(
-                image="img/startscreen.png",
-                scale=(1.5, 1.5, 1)
-            )
-        except:
-            print("img/startscreen.png not found. Get it from Github.")
-            self.bg = None
+        self.bg = OnscreenImage(
+           image="img/startscreen.jpeg",
+           scale=(1.5, 1.5, 1)
+        )
+
 
         self.components.append(self.bg)
 
@@ -122,8 +108,6 @@ class HelpDialog():
         self.frame = TabbedFrame(tab_frameSize=(0, 7, 0, 2),
                                  tab_text_align=TextNode.ALeft,
                                  tab_text_pos=(0.2, 0.6))
-
-        # Adapted from https://github.com/ArsThaumaturgis/TabbedFrame/blob/master/TabbedFrameExample.py
 
         font = Game.fonts["Action_Man"]
 
@@ -149,28 +133,9 @@ class HelpDialog():
         textNP.setScale(0.1)
         textNP.setPos(-0.7, 0, 0.6)
 
-        # Powerups
         page2 = DirectFrame()
         text = TextNode("text")
         text.setText("""\
-[Bolt] Speed boost!
-[Shield] You don't slow down when you hit the walls. Instead you slide smoothly along them
-Note: Powerups last for 5 seconds.
-""")
-
-        text.setWordwrap(10)
-        text.setTextColor(0, 0, 0, 1)
-        #text.setFont(font)
-
-        textNP = NodePath(text)
-        textNP.reparentTo(page2)
-        textNP.setScale(0.1)
-        textNP.setPos(-0.7, 0, 0.6)
-
-        page3 = DirectFrame()
-        text = TextNode("text")
-        text.setText("""\
-Details on Github (Samleo8/RacingGame)
 [3D Models]
 Jeep Model by bigcrazycarboy
 Lightning Bolt by Savino
@@ -188,15 +153,14 @@ Panda 3D forums
         #text.setFont(font)
 
         textNP = NodePath(text)
-        textNP.reparentTo(page3)
+        textNP.reparentTo(page2)
         textNP.setScale(0.072 )
         textNP.setPos(-0.7, 0, 0.7)
 
         # And finally, add the pages to our TabbedFrame, along with labels
         # for their buttons
         self.frame.addPage(page1, "Controls")
-        self.frame.addPage(page2, "Powerups")
-        self.frame.addPage(page3, "Credits")
+        self.frame.addPage(page2, "Credits")
 
         self.components += self.frame.pageButtons
 
@@ -244,17 +208,15 @@ class StartScreen(Game):
     def __init__(self):
         ShowBase.__init__(self)
 
-        try:
-            concreteBg = OnscreenImage(
-                image="img/startscreen.png",
-                scale=(1.5, 1.5, 1)
-            )
-        except:
-            print("img/startscreen.png not found. Get it from Github.")
-            concreteBg = None
+
+        concreteBg = OnscreenImage(
+            image="img/startscreen.jpeg",
+            scale=(1.5, 1.5, 1)
+        )
+
 
         title = OnscreenText(
-            text=gameTitle, pos=(0, 0.3), scale=0.32,
+            text=gameTitle, pos=(0, 0.5), scale=0.32,
             font=Game.fonts["Action_Man"],
             align=TextNode.ACenter, mayChange=False
         )
@@ -264,118 +226,15 @@ class StartScreen(Game):
             text="Start  Game", text_font=Game.fonts["Action_Man"],
             scale=0.15, command=self.startGame,
             pad=(0.3, 0.3),
-            pos=(0, 0, -0.32)
-        )
-
-        spaceShortcut = OnscreenText(
-            text='[Space]', pos=(0, -0.49), scale=0.08,
-            font=Game.fonts["Action_Man"],
-            align=TextNode.ACenter, mayChange=False,
-            bg=(182, 182, 182, 0.5)
-        )
-
-
-        # Instructions
-        helpText = """\
-WASD/Arrow Keys to Drive | Hold Space to drift
-1, 2, 3 to change camera | Hold C to look behind
-Hold V to look around | R to Restart
-"""
-        OnscreenText(
-            text=helpText, pos=(0, -0.7), scale=0.1,
-            bg=(255,255,255,0.7), wordwrap=20,
-            font=Game.fonts["Action_Man"],
-            align=TextNode.ACenter, mayChange=False
+            pos=(0, 0, -0.7)
         )
 
         # Next frame without clicking
         self.accept("space-up", self.startGame)
 
     def startGame(self):
-        #self.nextState("RacetrackSelection")
-        #jesnk
         self.nextState("game")
-    def changeLevel(self, level):
-        Game.level = level.lower()
 
-class RacetrackSelection(Game):
-    def __init__(self):
-        ShowBase.__init__(self)
-
-        '''
-        concreteBg = OnscreenImage(
-            image="img/startscreen.png",
-            scale=(1.5, 1.5, 1)
-        )
-        '''
-
-        title = OnscreenText(
-            text='Select your Racetrack!', pos=(0, 0.65), scale=0.18,
-            font=Game.fonts["Action_Man"], bg=(255, 255, 255, 1),
-            align=TextNode.ACenter, mayChange=False
-        )
-
-        nextButton = DirectButton(
-            text="Next", text_font=Game.fonts["Action_Man"],
-            scale=0.10, command=self.selectCar,
-            pad=(0.3, 0.3),
-            pos=(0, 0, -0.8)
-        )
-
-        spaceShortcut = OnscreenText(
-            text='[Space]', pos=(0, -0.93), scale=0.07,
-            font=Game.fonts["Action_Man"],
-            align=TextNode.ACenter, mayChange=False,
-            bg=(182, 182, 182, 0.5),
-        )
-
-        # Get List of tracks
-        self.tracks = self.findTracks("racetracks")
-
-        initialItem = self.tracks.index(Game.selectedTrack)
-
-        # Minimap!
-        points = Racetrack.parseTrackFile(Game.selectedTrack)
-        self.minimap = Minimap(points, renderer=self.render)
-
-        self.selectTrack(self.tracks[initialItem])
-
-        self.menu = DirectOptionMenu(
-            scale=0.15,
-            items=self.tracks, initialitem=initialItem,
-            highlightColor=(10, 10, 10, 1),
-            pad=(10, 10),
-            pos=(-0.5, 0, 0.35),
-            popupMenu_pos=(-0.5, 0, 0.2),
-            command=self.selectTrack
-        )
-
-        helperText = OnscreenText(
-            text='Click and drag anywhere to view the 3D track!', pos=(0, -0.6), scale=0.08,
-            font=Game.fonts["Action_Man"],
-            align=TextNode.ACenter, mayChange=False,
-            bg=(182, 182, 182, 0.5),
-        )
-
-        randomiseButton = DirectButton(
-            text="New Random Track", text_font=Game.fonts["Action_Man"],
-            scale=0.10, command=self.randomiseTrack,
-            pad=(0.3, 0.3),
-            pos=(-0.9, 0, 0.35)
-        )
-
-        self.randomText = OnscreenText(
-            text='', pos=(-0.9, 0.20), scale=0.07,
-            font=Game.fonts["Action_Man"],
-            align=TextNode.ACenter, mayChange=True,
-            bg=(182, 182, 182, 0.5),
-        )
-
-        # Next frame without clicking
-        self.accept("space-up", self.selectCar)
-
-        # Add task to spin camera
-        #self.taskMgr.add(self.trackShowcase, "TrackShowcase")
 
     # Define a procedure to move the camera.
     def trackShowcase(self, task):
@@ -405,16 +264,10 @@ class RacetrackSelection(Game):
 
         points = Racetrack.parseTrackFile(track)
 
-        self.minimap.reloadAndDraw(points)
 
         # Camera Control
         baseVec = LVector3f(0, 20, -3)
-        # base.trackball.node().setPos(baseVec + self.minimap.midPoint)
 
-        self.camControl = CameraController(
-            camPos=baseVec - self.minimap.midPoint,
-            anchorPos= self.minimap.midPoint
-        )
 
     def selectCar(self):
         self.camControl.enabled = False
@@ -449,18 +302,6 @@ class RacetrackSelection(Game):
         )
         self.camera.setHpr(radToDeg(angle), 0, 0)
         return Task.cont
-
-    def findCarsOrPassengers(self, path, prefix=""):
-        items = []
-
-        for f in os.listdir(path):
-            if f.startswith(prefix):
-                f = f.replace(prefix, "", 1)
-                for ext in Obj3D.modelTypes:
-                    f = f.replace(f".{ext}", "", 1)
-                items.append(f)
-
-        return items
 
     def startGame(self):
         self.nextState("instructions")
@@ -511,7 +352,6 @@ class RacingGame(Game):
 
         # Load the various models
         self.loadModels()
-        self.loadMinimap()
 
         # Load lights and the fancy background
         # NOTE: Racetrack needs to be generated first to properly generate the terrain
@@ -620,9 +460,6 @@ class RacingGame(Game):
         if "_rotate" in self.camConfig:
             self.camera.lookAt(x, y, z)
 
-        # Funny stuff: attempt to rotate minimap
-        # self.minimap.renderNode.setHpr(0, task.time * 3.0, 0)
-
         return Task.cont
 
     # Game over handling
@@ -631,7 +468,7 @@ class RacingGame(Game):
         self.winningCar = car
 
         if car.id == 0: # player
-            winMsg = f"You succeeded in escaping the maze!"
+            winMsg = f"You are Winner!"
 
         self.texts["gameOver"] = OnscreenText(
             text=winMsg, pos=(0, 0.8), scale=0.15,
@@ -657,13 +494,7 @@ class RacingGame(Game):
             return Task.cont
 
         for car in self.cars:
-            car.updatePowerup(task.time)
             car.updateMovement()
-            car.updateMinimap(self.minimapPoints[car.id])
-
-        for powerup in self.racetrack.powerups:
-            if powerup != None:
-                powerup.spin()
 
         return Task.cont
 
@@ -730,7 +561,6 @@ class RacingGame(Game):
     def loadModels(self):
         self.cars = []
         Racecar.nRacecars = 0
-        Powerup.nPowerups = 0
 
         self.racetrack = Racetrack(self, Game.selectedTrack)
 
@@ -740,43 +570,6 @@ class RacingGame(Game):
         self.cars.append(self.player)
 
         if self.printStatements: print(f"Opponent cars generated with difficulty {Game.level}")
-
-    def loadMinimap(self):
-        # Initialise points for minimap
-        points = self.racetrack.points
-
-        bounds = Minimap.getBounds(points)
-
-        maxB = max(bounds["x"][1], bounds["y"][1], bounds["z"][1])
-        minB = min(bounds["x"][0], bounds["y"][0], bounds["z"][0])
-
-        scaleFactor = (maxB-minB) * 2
-
-        # Draw the card (semi transparent bg) behind the minimap
-        minimapCard = CardMaker("minimap")
-        minimapCard.setFrame(-0.95, -0.35, -0.95, -0.35) # left right bottom top
-        minimapCard.setColor(90/255, 90/255, 90/255, 0.8)
-
-        render2d.attachNewNode(minimapCard.generate())
-        render2d.setTransparency(True)
-
-        # Draw the actual minimap (tracks)
-        # Note that x=0, z=0 is at the center of the screen
-        # Everything is normalised to 1
-
-        self.minimap = Minimap(points, renderer=render2d, scaleFactor=scaleFactor, color=(1,1,1,0.5))
-        renderNode = self.minimap.renderNode
-        renderNode.setPos(-0.9, 0, -0.9)
-        renderNode.setHpr(0, 90, 0)
-
-        # Load the minimap points (representing the players)
-        self.minimapPoints = [None for _ in range(len(self.cars))]
-
-        for car in self.cars:
-            self.minimapPoints[car.id] = MinimapPoint(
-                self, self.minimap,
-                isPlayer=(car.id == 0), renderParent=renderNode
-            )
 
     # Key Events
     def createKeyControls(self):
@@ -886,23 +679,22 @@ class RacingGame(Game):
 
         return Task.cont
 
-    # https://hub.packtpub.com/collision-detection-and-physics-panda3d-game-development/
     # Collision Events
     def collisionSetup(self, showCollisions=False):
         base.cTrav = CollisionTraverser()
 
         if showCollisions:
             base.cTrav.showCollisions(render)
+           #gameOver(self,self.player)
 
         # Set bitmasks
         # Reference: https://www.panda3d.org/manual/?ti
-        # tle=Bitmask_Example
+        # tle=Bitmask_Examplexf
         self.colBitMask = {
             "off": BitMask32.allOff(),
             "wall": BitMask32.bit(0),
             "floor": BitMask32.bit(1),
             "checkpoint": BitMask32.bit(2),
-            "powerup": BitMask32.bit(3),
             "offworld": BitMask32.bit(4)
         }
 

@@ -1,7 +1,6 @@
 from Obj3D import *
 from Racecar import *
 from Terrain import *
-from Powerup import *
 
 import copy
 
@@ -60,7 +59,7 @@ class Racetrack(Obj3D):
         tempWall.destroy()
 
         # Get racecar dimensions through a temporary car
-        tempCar = Racecar(self.gameObj, "groundroamer")
+        tempCar = Racecar(self.gameObj, "truck_blue")
         tempCarDim = tempCar.getDimensions()
         tempCar.destroy()
         Racecar.nRacecars -= 1
@@ -85,10 +84,6 @@ class Racetrack(Obj3D):
         self.checkpoints = []
         self.generateCheckpoints()
 
-        # Generate powerups
-        self.powerupSpawnChance = 0.5
-        self.powerups = []
-        self.generatePowerups()
     
     # Generate checkpoints
     # Basically collision boxes from left to right side point
@@ -117,27 +112,6 @@ class Racetrack(Obj3D):
             )
 
             colNode.setPythonTag("checkpointID", i)
-
-        return
-
-    def generatePowerups(self):
-        N = len(self.points)
-        for i in range(N):
-            if random.random() > self.powerupSpawnChance:
-                self.powerups.append(None)
-                continue
-
-            point1 = LVector3f(self.points[i])
-            point2 = LVector3f(self.points[(i+1) % N])
-
-            dirVec = point2 - point1
-            r = random.uniform(0.1, 0.9)
-
-            pos = tuple(point1 + dirVec * r)
-
-            powerup = ActivePowerup(self.gameObj, pos=pos)
-
-            self.powerups.append(powerup)
 
         return
 

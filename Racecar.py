@@ -1,5 +1,4 @@
 from Obj3D import *
-from Powerup import *
 class Racecar(Obj3D):
     nRacecars = 0 # this will serve as the unique ID for collision node
 
@@ -35,11 +34,6 @@ class Racecar(Obj3D):
         self.currLap = 0
         self.passedCheckpoints = []
 
-        # Powerups
-        self.activePowerup = None
-        self.powerupSprite = None
-        self.powerupActiveTime = None
-        
         # Reset speeds and acceleration
         self.setSpeed(0, 0)
         self.setAcceleration(0, 0)
@@ -62,7 +56,7 @@ class Racecar(Obj3D):
         self.move(dz=self.dimZ/2)
 
         # Add passenger
-        self.personName = "penguin" if passengerName == None else passengerName
+        self.personName ="bunny" if passengerName == None else passengerName
         self.passenger = Passenger(
             self.gameObj,
             self.personName, self.model
@@ -152,8 +146,8 @@ class Racecar(Obj3D):
         self.colCheckpointEvent.addAgainPattern('%fn-again-%in')
         self.colCheckpointEvent.addOutPattern('%fn-out-%in')
 
-        # Initialise simple sphere just to check for checkpoint and powerup passing
-        fromBitmask = self.gameObj.colBitMask["checkpoint"] | self.gameObj.colBitMask["powerup"]
+        # Initialise simple sphere just to check for checkpoint
+        fromBitmask = self.gameObj.colBitMask["checkpoint"]
 
         colSphere = CollisionSphere(self.relOffsetX, self.relOffsetY, self.relOffsetZ, self.dimZ/2)
 
@@ -176,7 +170,6 @@ class Racecar(Obj3D):
         base.cTrav.addCollider(self.colCheckpointNode, self.colCheckpointEvent)
 
         self.gameObj.accept(f"{colNodeName}-in-checkpoint", self.onPassCheckpoint)
-        self.gameObj.accept(f"{colNodeName}-out-powerup", self.onCollectPowerup)
     
     def initOnRacetrack(self, order=None):
         if order == None: 
@@ -211,55 +204,6 @@ class Racecar(Obj3D):
 
         return
 
-    # POWERUPS
-    def onCollectPowerup(self, entry):
-        powerupType = entry.getIntoNodePath().getPythonTag("powerupType")
-
-        if self.gameObj.printStatements: print(f"Car {self.id} has collected a {powerupType} powerup!")
-
-        # Deactivate first (removes away the sprites)
-        self.deactivatePowerup()
-
-        # Now activate
-        self.activatePowerup(powerupType)
-
-        return
-
-    def updatePowerup(self, taskTime):
-        # Check if new powerup was updated
-        if self.activePowerup != None:
-            # New powerup
-            if self.powerupActiveTime == None:
-                self.powerupActiveTime = taskTime
-            # Powerup needs to be deactivated
-            elif taskTime - self.powerupActiveTime >= Powerup.lastTime:
-                self.deactivatePowerup()
-
-        return
-
-    def activatePowerup(self, powerupType=None):
-        if powerupType == None:
-            powerupType = Powerup.pickRandom()
-
-        self.activePowerup = powerupType
-        self.powerupSprite = DisabledPowerup(
-            self.gameObj, powerupType,
-            renderParent=self.model,
-            pos=self.offset
-        )
-        self.powerupSprite.move(dz=self.dimZ/2 + self.passenger.dimZ/2)
-
-        if powerupType == "speed":
-            self.incAcceleration(self.accInc * 12)
-
-    def deactivatePowerup(self):
-        self.powerupActiveTime = None
-        self.activePowerup = None
-        
-        if self.powerupSprite != None:
-            self.powerupSprite.destroy()
-            #self.powerupSprite = None
-
     # CHECKPOINTS
     def onPassCheckpoint(self, entry):
         # Get passed checkpoint ID
@@ -286,10 +230,8 @@ class Racecar(Obj3D):
             N = len(self.passedCheckpoints)
             if self.gameObj.printStatements: print(f"Car {self.id}: Need to pass checkpoint {(checkpointID+N-1)%N} first")
 
+#벽에 부딪히는 거 여깄
     def onCollideWall(self, entry):
-        # Shield powerup negates all effects
-        if self.activePowerup == "shield":
-            return
 
         self.isCollidingWall = True
         self.setSpeed(0, 0)
@@ -310,10 +252,7 @@ class Racecar(Obj3D):
     # Set/get/change velocities and accelerations
     def setSpeed(self, spd=None, rotSpd=None):
         if isNumber(spd):
-            if self.activePowerup == "speed":
-                self.speed = spd
-            else:
-                self.speed = min(max(spd, self.maxSpeedBackwards), self.maxSpeed) 
+            self.speed = min(max(spd, self.maxSpeedBackwards), self.maxSpeed)
 
         if isNumber(rotSpd):
             self.rotationSpeed = min(rotSpd, self.maxRotationSpeed)
@@ -377,9 +316,6 @@ class Racecar(Obj3D):
                 friction = -self.friction
             elif self.speed < 0:
                 friction = self.friction
-
-        if self.activePowerup == "speed":
-            friction *= 0.75
 
         self.incAcceleration(friction)
 
@@ -586,27 +522,3 @@ class SmartCar(Racecar):
     def updateMovement(self):
         self.artificialStupidity()
         super().updateMovement()
-
-# The smarter car will go for powerups
-class SmartGreedyCar(SmartCar):
-    def artificialStupidity(self):
-        # Get midpoint of next checkpoint
-        trackPoints = self.gameObj.racetrack.points
-        i = (self.currentCheckpoint+1) % len(trackPoints)
-
-        powerup = self.gameObj.racetrack.powerups[i-1]
-        trackPoint = trackPoints[i]
-        
-        if self.isBeingStupid or powerup == None or self.activePowerup != None:
-            gotoPoint = trackPoint
-        else:
-            powerupPoint = powerup.getPos()
-
-            angle = self.angleToPoint(powerupPoint) - self.getHpr()[0]
-            # Now check if the powerup point is behind or in front of the car
-            if abs(angle) < 90:
-                gotoPoint = powerupPoint
-            else: 
-                gotoPoint = trackPoint
-
-        self.moveTowardsPoint(gotoPoint)
