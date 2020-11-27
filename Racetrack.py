@@ -2,6 +2,7 @@ from Obj3D import *
 from Racecar import *
 from Terrain import *
 
+
 import copy
 
 class Wall(Obj3D):
@@ -12,7 +13,7 @@ class Wall(Obj3D):
         if "crate" in model: 
             self.scaleAll(0.01)
 
-        #self.initTexture("concrete")
+        self.initTexture("WoodPlanksBareWindmillCap.jpg")
 
         self.repositionToCenter()
         self.move(dz=self.dimZ/2)
@@ -64,8 +65,8 @@ class Racetrack(Obj3D):
         tempCar.destroy()
         Racecar.nRacecars -= 1
 
-        # Set wall spacing
-        self.defaultWallSpacing = max(self.wallDim) + tempCarDim[0] * 6
+        # Set wall spacing (여기 곱하는거 늘리면 간격 넓어짐!)
+        self.defaultWallSpacing = max(self.wallDim) + tempCarDim[0] * 12
 
         # Generate racetrack
         self.points = []
@@ -83,6 +84,8 @@ class Racetrack(Obj3D):
         self.showCheckpoints = False
         self.checkpoints = []
         self.generateCheckpoints()
+
+        return
 
     
     # Generate checkpoints
@@ -112,6 +115,8 @@ class Racetrack(Obj3D):
             )
 
             colNode.setPythonTag("checkpointID", i)
+
+        return
 
         return
 
@@ -183,8 +188,6 @@ class Racetrack(Obj3D):
     def generateRacetrackFromFile(self, fileName):
         points = Racetrack.parseTrackFile(fileName)
 
-        # line: (startPoint, dirVector)
-        # sideTrack: (sidetrackPoint1, sideTrack2, angles)
         N = len(points)
 
         leftTrackPoints = []
@@ -192,6 +195,7 @@ class Racetrack(Obj3D):
 
         # Find bounds of inner and outer tracks
         for i in range(N):
+
             point = points[i]
 
             dir1 = sub2Tuples(points[i-1], point)
@@ -290,9 +294,6 @@ class Racetrack(Obj3D):
             ground.rotate(dh=theta, dp=phi)
 
 
-    # Given a start pos, calculate positions of side track points with defined spacing from the center position
-    # and with the correct facing (yaw) 
-    # Returns pos1, pos2, (theta, phi) 
     def calculateSideTracks(self, line, spacing=0):
         startPos, directionVector = line
 
@@ -321,5 +322,5 @@ class Racetrack(Obj3D):
             phi = radToDeg(math.atan(c/r))
         except:
             phi = 0
-
+        print(pos1, pos2)
         return pos1, pos2, (theta, phi)

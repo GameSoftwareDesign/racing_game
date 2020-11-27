@@ -262,7 +262,7 @@ class Obj3D(object):
 
     # Set texture
     def initTexture(self, textureName, override=1):
-        texture = loader.loadTexture(f"models/tex/{textureName}.png")
+        texture = loader.loadTexture(f"models/tex/{textureName}")
         
         '''
         self.model.setTexGen(
