@@ -72,7 +72,7 @@ class Racecar(Obj3D):
 
     # Init 3D audio
     def initAudio(self):
-        self.attachAudio("collision", loop=False,
+        self.attachAudio("spring", loop=False,
                          volume=1.5, dropOffFactor=0.3)
 
     def getColNodeName(self, extras):

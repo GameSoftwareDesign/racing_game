@@ -215,7 +215,7 @@ class RacingGame(Game):
         self.audio = {}
 
         # Bg audio
-        bgAudio = base.loader.loadSfx("audio/purple_passion.mp3")
+        bgAudio = base.loader.loadSfx("audio/UrbanStreet.mp3")
         bgAudio.setLoop(True)
         bgAudio.setVolume(0.05)
 
