@@ -27,7 +27,7 @@ class Game(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
-        Game.fonts["Action_Man"] = loader.loadFont('Action_Man.ttf')
+        Game.fonts["Action_Man"] = loader.loadFont('font.ttf')
 
         self.nextState("start")
 
