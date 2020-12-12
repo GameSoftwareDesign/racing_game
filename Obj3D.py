@@ -336,29 +336,6 @@ class Obj3D(object):
         self.hpr = self.model.getHpr()
         return self.hpr
 
-    '''
-    # Set/get/change velocities and accelerations
-    def setSpeed(self, vx, vy, vz):
-        self.speed = vx, vy, vz
-        self.vx, self.vy, self.vz = self.speed
-
-    def setAcceleration(self, ax, ay, az):
-        self.acceleration = ax, ay, az
-        self.ax, self.ay, self.az = self.acceleration
-
-    def getSpeed(self):
-        return self.speed
-
-    def getAcceleration(self):
-        return self.acceleration
-
-    def incSpeed(self, vx=0, vy=0, vz=0):
-        vx, vy, vz = add2Tuples(self.getSpeed(), (vx, vy, vz))
-        self.setSpeed(vx, vy, vz)
-
-    def updateMovement(self):
-        self.incSpeed(self.ax, self.ay, self.az)
-    '''
 
     # Set scale
     # Note that dimesions will change when scale changes
