@@ -297,6 +297,7 @@ class RacingGame(Game):
                 self.accept(key+"-up", self.setKeyDown, [fn, -1])
 
 
+    # Key Down 
     def setKeyDown(self, key, value):
         self.isKeyDown[key] += value
         if self.isKeyDown[key] < 0:
