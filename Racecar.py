@@ -85,14 +85,6 @@ class Racecar(Obj3D):
         colNode = self.getCollisionNode(self.getColNodeName("wall"))
         colNode.node().setFromCollideMask(self.gameObj.colBitMask["wall"])
         
-        '''
-        Wall Handling
-        '''
-        # NOTE: The way that pusher works is that it updates the NodePath model position on the collision
-        # This means that the positions used to update the positions must be constantly updated from the 
-        # __NodePath__ positions, not internal x,y,z positions stored in the class.
-        # https://discourse.panda3d.org/t/player-goes-straight-through-walls-despite-collisionpusher/25368/7
-
         # Initialise pusher collision handling
         self.colPusher = CollisionHandlerPusher()
 
@@ -156,12 +148,6 @@ class Racecar(Obj3D):
             fromBitmask=fromBitmask, intoBitmask=self.gameObj.colBitMask["off"],
             show=False
         )
-        
-        '''
-        self.colCheckpointNode = self.initSurroundingCollisionObj(self.getColNodeName("checkpoint"), "capsule", show=True)
-        self.colCheckpointNode.node().setFromCollideMask(fromBitmask)
-        self.colCheckpointNode.node().setIntoCollideMask(self.gameObj.colBitMask["off"])
-        '''
 
         # Collision Events
         # Make this dependent on the player ID to allow for individual event triggering
@@ -392,12 +378,3 @@ class Passenger(Obj3D):
         super().__init__("passenger_" + model, renderParent, pos, hpr)
         self.gameObj = gameObj
 
-class DisplayCar(Racecar):
-    '''
-    def __init__(self, gameObj, model, passenger=None, renderParent=None, pos=None, hpr=None):
-        super(Racecar, self).__init__("car_" + model, renderParent, pos, hpr)
-        self.gameObj = gameObj
-
-        self.initCarAndPassengerModels(model, passenger)
-    '''
-    pass
