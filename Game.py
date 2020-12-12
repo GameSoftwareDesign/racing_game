@@ -380,5 +380,6 @@ class RacingGame(Game):
     def restartGame(self):
         self.nextState("start")
 
+#Game Start
 game = Game()
 game.run()
