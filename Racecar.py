@@ -378,3 +378,5 @@ class Passenger(Obj3D):
         super().__init__("passenger_" + model, renderParent, pos, hpr)
         self.gameObj = gameObj
 
+class DisplayCar(Racecar) :
+    pass
