@@ -4,7 +4,7 @@
   "maya2egg carTrunk.mb carTrunk.egg"
 }
 <Texture> lambert6SG {
-  "carnsx-tire.png"
+  "tex/tire.png"
   <Scalar> format { rgb }
   <Scalar> wrapu { repeat }
   <Scalar> wrapv { repeat }
@@ -12,7 +12,7 @@
   <Scalar> magfilter { linear }
 }
 <Texture> lambert5SG {
-  "cartruck-blue.png"
+  "maps/cartruck-blue.png"
   <Scalar> format { rgb }
   <Scalar> wrapu { repeat }
   <Scalar> wrapv { repeat }
