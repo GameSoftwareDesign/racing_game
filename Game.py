@@ -11,7 +11,6 @@ from Terrain import *
 from CameraController import *
 from panda3d.core import loadPrcFileData
 
-# Globally change window title name
 gameTitle = "Bunny Bunny"
 loadPrcFileData("", f"window-title {gameTitle}")
 
@@ -72,7 +71,6 @@ class StartScreen(Game):
             pos=(0, 0, -0.7)
         )
 
-        # Next frame without clicking
         self.accept("space-up", self.startGame)
 
     def startGame(self):
@@ -83,31 +81,24 @@ class RacingGame(Game):
     def __init__(self):
         ShowBase.__init__(self)
 
-        # Get other stuff ready
         self.paused = False
         self.muted = False
         self.sfxMuted = False
         self.isGameOver = False
-        self.gameOverTime = 0 # for camera rotation
+        self.gameOverTime = 0
         self.printStatements = False
-
 
         self.totalLaps = 1
 
         Obj3D.worldRenderer = self.render
 
-        # Generate texts
         self.texts = {}
-
-        # Load collision handlers
         self.collisionSetup(showCollisions=False)
-
         self.loadAudio()
         self.loadModels()
         self.loadBackground()
         self.loadLights()
 
-        # Key movement
         self.isKeyDown = {}
         self.createKeyControls()
 
@@ -120,21 +111,17 @@ class RacingGame(Game):
 
 
     def setCameraToPlayer(self, task):
-        # Focus on winning car when gameover
         player = self.player \
             if not self.isGameOver else self.winningCar
 
         x, y, z = player.getPos()
         h, p, r = player.getHpr()
 
-        # Offset centers
         x += player.offsetX
         y += player.offsetY
         z += player.offsetZ
 
         camDistance = player.dimY * 1.5
-
-        # Allow for variable camera configuration
         theta = degToRad(h)
 
         if "_rotate" in self.camConfig:
@@ -143,7 +130,6 @@ class RacingGame(Game):
 
             theta = (task.time - self.gameOverTime) * 2.5 + degToRad(h)
 
-            # Stop rotation after n rotations
             nRotations = 1
             if self.isGameOver and theta - degToRad(h) >= ( (nRotations-1) * 2 * math.pi + math.pi):
                 self.setCameraView("perspective_behind_win")
@@ -169,7 +155,7 @@ class RacingGame(Game):
 
         return Task.cont
 
-    # Game over handling
+    # Game over
     def gameOver(self, car):
         self.isGameOver = True
         self.winningCar = car
@@ -191,7 +177,6 @@ class RacingGame(Game):
             pos=(0, 0, -0.75)
         )
 
-        # Make camera move and have the audio stop after
         self.setCameraView("perspective_rotate_win")
         return
 
@@ -214,8 +199,7 @@ class RacingGame(Game):
 
         self.audio = {}
 
-        # Bg audio
-        bgAudio = base.loader.loadSfx("audio/UrbanStreet.mp3")
+        bgAudio = base.loader.loadSfx("audio/UrbanStreet.wav")
         bgAudio.setLoop(True)
         bgAudio.setVolume(0.05)
 
@@ -225,7 +209,6 @@ class RacingGame(Game):
 
     # Load lights
     def loadLights(self):
-        #add one light per face, so each face is nicely illuminated
         plight1 = PointLight('plight')
         plight1.setColor(VBase4(1, 1, 1, 1))
         plight1NodePath = render.attachNewNode(plight1)
@@ -275,8 +258,6 @@ class RacingGame(Game):
 
     # Key Events
     def createKeyControls(self):
-        # Create a function to key maps
-        # "<function>": [ <list of key ids> ]
         functionToKeys = {
             "forward": [ "arrow_up" ],
             "backward": [ "arrow_down"],
@@ -286,8 +267,6 @@ class RacingGame(Game):
 
         for fn in functionToKeys:
             keys = functionToKeys[fn]
-
-            # Initialise dictionary
             self.isKeyDown[fn] = 0
 
             for key in keys:
@@ -304,7 +283,6 @@ class RacingGame(Game):
             self.isKeyDown[key] = 0
 
     def setCameraView(self, view):
-        # Once win, only allow for win camera view
         if self.isGameOver and "_win" not in view:
             return
 
@@ -332,17 +310,15 @@ class RacingGame(Game):
 
         return Task.cont
 
-    # Collision Events
+    # Collision
     def collisionSetup(self, showCollisions=False):
         base.cTrav = CollisionTraverser()
 
         if showCollisions:
             base.cTrav.showCollisions(render)
-           #gameOver(self,self.player)
 
         # Set bitmasks
         # Reference: https://www.panda3d.org/manual/?ti
-        # tle=Bitmask_Examplexf
         self.colBitMask = {
             "off": BitMask32.allOff(),
             "wall": BitMask32.bit(0),
@@ -370,7 +346,6 @@ class RacingGame(Game):
         return
 
     def pauseAudio(self):
-        # We need to pause music too
         for nm in self.audio:
             sound = self.audio[nm]
 
