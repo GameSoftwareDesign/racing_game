@@ -1,6 +1,6 @@
 from Obj3D import *
 class Racecar(Obj3D):
-    nRacecars = 0 # this will serve as the unique ID for collision node
+    nRacecars = 0
 
     def __init__(self, gameObj, model, passenger=None, renderParent=None, pos=None, hpr=None):
         super().__init__("car_" + model, renderParent, pos, hpr)
@@ -14,19 +14,17 @@ class Racecar(Obj3D):
         self.id = Racecar.nRacecars
         Racecar.nRacecars += 1
 
-        # Speed, positioning and sizing
+        # Speed
         self.defaultRotationSpeed = 1
         self.maxSpeed = 5
         self.maxSpeedBackwards = -3.5
 
         self.maxRotationSpeed = 5
 
-        # Will be multiplied by current speed to provide the stopping force
         self.friction = 0.03
         self.accInc = self.friction + 0.005
         self.defaultRotationAcceleration = -0.1
 
-        self.drifting = False
         self.allowStaticTurning = False
 
         self.isCollidingWall = False
@@ -34,11 +32,9 @@ class Racecar(Obj3D):
         self.currLap = 0
         self.passedCheckpoints = []
 
-        # Reset speeds and acceleration
         self.setSpeed(0, 0)
         self.setAcceleration(0, 0)
 
-        # Init position on racetrack iff racetrack exists
         if hasattr(self.gameObj, "racetrack"):
             self.initOnRacetrack()
 
@@ -47,11 +43,6 @@ class Racecar(Obj3D):
         self.initAudio()
 
     def initCarAndPassengerModels(self, carName=None, passengerName=None):
-        # NOTE: When you scale, whatever coordinates used also scales
-        # if carName == "racecar":
-        #     self.scaleAll(2)
-
-        # general way of making sure vehicle is always on the ground, regardless of that vehicle's center
         self.repositionToCenter()
         self.move(dz=self.dimZ/2)
 
@@ -62,7 +53,6 @@ class Racecar(Obj3D):
             self.personName, self.model
         )
 
-        # Passenger's positions need to be adjusted to the actual center of the object
         self.passenger.scaleAll(1)
 
         self.passenger.move(dx=self.relOffsetX,
@@ -72,50 +62,41 @@ class Racecar(Obj3D):
 
     # Init 3D audio
     def initAudio(self):
-        self.attachAudio("spring", loop=False,
+        self.attachAudio("audio/spring.wav", loop=False,
                          volume=1.5, dropOffFactor=0.3)
 
     def getColNodeName(self, extras):
         return f"car_{self.id}_{extras}"
 
     def initCollisions(self):
-        # Initialise bounding box for wall
         self.initSurroundingCollisionObj(self.getColNodeName("wall"), "capsule")
 
         colNode = self.getCollisionNode(self.getColNodeName("wall"))
         colNode.node().setFromCollideMask(self.gameObj.colBitMask["wall"])
-        
-        # Initialise pusher collision handling
+
         self.colPusher = CollisionHandlerPusher()
 
         # Credits to https://discourse.panda3d.org/t/collisions/58/7
         self.colPusher.addCollider(colNode, self.model, base.drive.node())
-        #self.colPusher.addCollider(colNode, base.camera , base.drive.node())
 
         self.colPusher.addInPattern('%fn-in-%in')
         self.colPusher.addInPattern('%fn-again-%in')
         self.colPusher.addOutPattern('%fn-out-%in')
-        
-        # Problem is the racecar will attempt to scale the wall
+
         self.colPusher.setHorizontal(True)
 
         base.cTrav.addCollider(colNode, self.colPusher)
 
         # Collision Events
-        # Make this dependent on the player ID to allow for individual event triggering
         colNodeName = self.getColNodeName("wall")
 
         self.gameObj.accept(f"{colNodeName}-in-wall", self.onCollideWall)
         self.gameObj.accept(f"{colNodeName}-again-wall", self.onCollideWall)
         self.gameObj.accept(f"{colNodeName}-out-wall", self.onExitWall)
 
-        '''
-        Floor Handling
-        '''
         self.colLifter = CollisionHandlerFloor()
         self.colLifter.setMaxVelocity(10)
 
-        # Create the ray pointing from the bottom
         floorRayNode = self.addCollisionNode("floorRay")
         floorRayNode.node().addSolid(CollisionRay(
             self.offsetX, self.offsetY, self.passenger.offsetZ + self.passenger.dimZ, 
@@ -128,9 +109,6 @@ class Racecar(Obj3D):
 
         base.cTrav.addCollider(floorRayNode, self.colLifter)
 
-        '''
-        Checkpoint Handling
-        '''
         # Init Event
         self.colCheckpointEvent = CollisionHandlerEvent()
 
@@ -138,7 +116,6 @@ class Racecar(Obj3D):
         self.colCheckpointEvent.addAgainPattern('%fn-again-%in')
         self.colCheckpointEvent.addOutPattern('%fn-out-%in')
 
-        # Initialise simple sphere just to check for checkpoint
         fromBitmask = self.gameObj.colBitMask["checkpoint"]
 
         colSphere = CollisionSphere(self.relOffsetX, self.relOffsetY, self.relOffsetZ, self.dimZ/2)
@@ -150,7 +127,6 @@ class Racecar(Obj3D):
         )
 
         # Collision Events
-        # Make this dependent on the player ID to allow for individual event triggering
         colNodeName = self.getColNodeName("checkpoint")
 
         base.cTrav.addCollider(self.colCheckpointNode, self.colCheckpointEvent)
@@ -161,7 +137,6 @@ class Racecar(Obj3D):
         if order == None: 
             order = self.id
 
-        # Assumes that racetrack has already been generated
         trackPoints = self.gameObj.racetrack.points
 
         startPos = LVector3f(trackPoints[0])
@@ -181,8 +156,6 @@ class Racecar(Obj3D):
 
         # Rotate to face the closest checkpoint
         self.rotate(dh=yawFacing)
-
-        # Init Passed Checkpoints array
         self.currLap = 0
 
         self.passedCheckpoints = [0 for i in range(len(trackPoints))]
@@ -192,20 +165,17 @@ class Racecar(Obj3D):
 
     # CHECKPOINTS
     def onPassCheckpoint(self, entry):
-        # Get passed checkpoint ID
         checkpointID = entry.getIntoNodePath().getPythonTag("checkpointID")
 
-        # Make sure that previous checkpoint was passed before update
         if self.passedCheckpoints[checkpointID-1] > self.passedCheckpoints[checkpointID]:
             if self.gameObj.printStatements:
                 print(f"Car {self.id}: Passed checkpoint {checkpointID}")
             self.passedCheckpoints[checkpointID] += 1
-        # New lap
+
         elif checkpointID == 0 and self.passedCheckpoints[0] == self.passedCheckpoints[-1]:
             self.currLap += 1
             self.passedCheckpoints[0] += 1 
 
-            # Check win condition
             totalLaps = self.gameObj.totalLaps
 
             if self.currLap >= totalLaps:
@@ -216,26 +186,19 @@ class Racecar(Obj3D):
             N = len(self.passedCheckpoints)
             if self.gameObj.printStatements: print(f"Car {self.id}: Need to pass checkpoint {(checkpointID+N-1)%N} first")
 
-#벽에 부딪히는 거 여깄
     def onCollideWall(self, entry):
 
         self.isCollidingWall = True
         self.setSpeed(0, 0)
         self.setAcceleration(0, 0)
 
-        # 3D audio yay!
         if not self.gameObj.sfxMuted:
-            self.audio["spring"].play()
+            self.audio["audio/spring.wav"].play()
         
     def onExitWall(self, entry):
         self.isCollidingWall = False
         return
-        
-    # Speeds and Acceleration handling
-    # Note that speed/accel is singluar direction (where the car is facing)
-    # There is also angular velocity
 
-    # Set/get/change velocities and accelerations
     def setSpeed(self, spd=None, rotSpd=None):
         if isNumber(spd):
             self.speed = min(max(spd, self.maxSpeedBackwards), self.maxSpeed)
@@ -268,19 +231,13 @@ class Racecar(Obj3D):
     def incAcceleration(self, da=0, dalpha=0):
         self.setAcceleration(self.acceleration + da, self.rotationAcceleration + dalpha)
 
-    # Calculations relative to points
-    # NOTE: Euler system used
     def angleToPoint(self, point):
-        # Calculate angle from current position (x, y) to next point
         x, y, _ = self.getPos()
         px, py, _ = point
 
-        # Because it's in the euler coordinate system
-        # swap [y|x] with [-x|y]
         return rad2Deg(math.atan2(x-px, py-y))
 
     def distanceToPoint(self, point, xyOnly=False):
-        # Calculate distance from current position (x, y) to next point
         x, y, z = self.getPos()
         px, py, pz = point
 
@@ -293,7 +250,6 @@ class Racecar(Obj3D):
 
     # Update movement
     def updateMovement(self):
-        # Friction
         useSpeedBasedFriction = (self.speed == 0) or (self.acceleration > 1.5 * self.friction)
         if useSpeedBasedFriction:
             friction = -self.friction * self.speed
@@ -305,7 +261,6 @@ class Racecar(Obj3D):
 
         self.incAcceleration(friction)
 
-        # Update the car's speed based on its acceleration
         prevSpeed = self.speed
         prevRotSpeed = self.rotationSpeed
         self.incSpeed(dv=self.acceleration, dw=self.rotationAcceleration)
@@ -319,13 +274,10 @@ class Racecar(Obj3D):
         if not sameSign(prevRotSpeed, self.rotationSpeed):
             self.setSpeed(rotSpd=0)
             self.setAcceleration(acc=0, rotAcc=0)
-        
-        # Get car's current forward facing direction based on its yaw angle
-        # Then calculate dx and dy
+
         dirAngle, _, _ = self.getHpr()
         dirAngle *= -(math.pi/180)  # to rad
 
-        # Note that sin and cos are switched because car is facing y by default
         dy = self.speed * math.cos(dirAngle)
         dx = self.speed * math.sin(dirAngle)
 
@@ -338,14 +290,13 @@ class Racecar(Obj3D):
             self.initOnRacetrack(0)
             return
 
-    # Check below ground
     def checkBelowGround(self):
         _, _, z = self.getPos()
         groundLevel = self.gameObj.racetrack.trackBounds["z"][0] - self.dimZ * 2
 
         return z < groundLevel
 
-    # External Controls
+    # Controls
     def doDrive(self, direction="forwards"):
         accInc = self.accInc
         if direction in [ "backward", "backwards", "back", "reverse" ]:
@@ -354,11 +305,9 @@ class Racecar(Obj3D):
             self.incAcceleration(+1 * accInc)
 
     def doTurn(self, direction="left"):
-        # Prevent static turning unless specified
         if self.speed == 0 and not self.allowStaticTurning:
             return
 
-        # Direction changes depending on speed of the car
         if direction in [ "right", "clockwise", "cw" ]:
             _dir = -1 if self.speed >= 0 else +1 
         else: 
@@ -367,11 +316,8 @@ class Racecar(Obj3D):
         rotSpd = _dir * self.defaultRotationSpeed
         rotAcc = _dir * self.defaultRotationAcceleration
 
-        # Drifting!
-        acc = 0 if self.drifting else None
-
         self.setSpeed(rotSpd=rotSpd)
-        self.setAcceleration(acc=acc, rotAcc=rotAcc)
+        self.setAcceleration(acc=0, rotAcc=rotAcc)
 
 class Passenger(Obj3D):
     def __init__(self, gameObj, model, renderParent=None, pos=None, hpr=None):

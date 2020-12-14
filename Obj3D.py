@@ -1,13 +1,3 @@
-'''
-3D Object Class used by Racing Game
-
-Allows for setting of positions, hpr,
-model and parenting, and more.
-
-Meant to be used as a super class 
-for more complicated objects
-'''
-
 # Panda 3D imports
 from panda3d.core import *
 from direct.showbase.ShowBase import ShowBase
@@ -95,7 +85,6 @@ def normaliseEuler(n):
     return n
 
 class Obj3D(object):
-    # Set worldRenderer in app loadModels
     worldRenderer = None
     audio3d = None
 
@@ -103,7 +92,6 @@ class Obj3D(object):
 
     def __init__(self, model, renderParent=None, pos=None, hpr=None):
         # Set model
-        # Also check if we can load this model type
         self.modelName = model
         modelTypes = Obj3D.modelTypes
         modelFile = f"models/{model}"
@@ -142,9 +130,6 @@ class Obj3D(object):
         self.setHpr(h, p, r)
 
         # Set dimensions
-        # Note that when the object is scaled, the coordinate systems are scaled as well.
-        # Hence, the relative dimensions stay the same, and are used for anything which is a child of the object (such as collision boxes).
-        # However, for movement and positioning etc, this is done in absolute coordinates
         self.relativeDim, self.relativeOffset = self.calculateDimensionsAndOffset()
         self.relDimX, self.relDimY, self.relDimZ = self.relativeDim
         self.relOffsetX, self.relOffsetY, self.relOffsetZ = self.relativeOffset
@@ -156,19 +141,10 @@ class Obj3D(object):
         self.audio = { }
 
     # Collision Handling
-    # Initialise a an object surrounding the whole player
     def initSurroundingCollisionObj(self, name=None, shape="box", show=False, args=None):
         name = name if name != None else self.modelName
         colNode = self.addCollisionNode(name)
 
-        # Dynamically create a collision solid surrounding the object:
-        # Shape:
-        #   Box (default)
-        #   Sphere 
-        #   Capsule/Cylinder - requires args["axis"] to be set
-        # Args:
-        #   Axis: for capsule/cylinder
-        #   Padding
         obj = self.genCollisionSolid(shape, args)
 
         colNode.node().addSolid(obj)
@@ -178,14 +154,12 @@ class Obj3D(object):
 
         return colNode
 
-    # Create a collision solid dynamically based on 
-    # offset center, dimensions and specified arguments
+    # Create a collision solid dynamically based on offset center
     def genCollisionSolid(self, shape="box", args=None):
         # Defaults
         padding = (0, 0, 0)
         axis = "y"
-        
-        # Load args if exists; else load defaults
+
         if isinstance(args, dict):
             axis = args.get("axis", axis)
             padding = args.get("padding", padding)
@@ -202,8 +176,7 @@ class Obj3D(object):
         elif shape in [ "sphere" ]:
             return CollisionSphere(
                 # calculated true center
-                self.relOffsetX, self.relOffsetY, self.relOffsetZ, 
-                # radius will be max of component of relative dimension
+                self.relOffsetX, self.relOffsetY, self.relOffsetZ,
                 max(add2Tuples(self.relativeDim, padding))/2
             )
         elif shape in [ "cylinder", "capsule" ]:
@@ -266,17 +239,8 @@ class Obj3D(object):
         self.model.setTexture(texture, override)
 
     # 3D Audio
-    # NOTE: Stereo audio will not work; must convert to mono
     def attachAudio(self, audioName, loop=False, volume=1, dropOffFactor=1):
-        audioTypes = ["wav", "ogg", "mp3"]  # in order of priority
-        audioFile = f"audio/{audioName}"
-
-        for audioType in audioTypes:
-            tempaudioFile = audioFile + "." + audioType
-
-            if os.path.exists(tempaudioFile):
-                audioFile = tempaudioFile
-                break
+        audioFile = audioName
 
         audio3d = Audio3DManager.Audio3DManager(
             base.sfxManagerList[0], base.camera
@@ -336,12 +300,6 @@ class Obj3D(object):
         self.hpr = self.model.getHpr()
         return self.hpr
 
-
-    # Set scale
-    # Note that dimesions will change when scale changes
-    # Hence, get dimensions must be updated in scale
-    # However, note that get dimensions is slow.
-
     def setScale(self, scaleX=1, scaleY=1, scaleZ=1, getDim=False):
         self.model.setScale(scaleX, scaleY, scaleZ)
 
@@ -352,8 +310,6 @@ class Obj3D(object):
         self.setScale(scaleXYZ, scaleXYZ, scaleXYZ, getDim)
 
     # Get dimensions
-    # NOTE: These dimensions are absolute to the rendering parent
-    # NOTE: Slow
     # https://discourse.panda3d.org/t/how-to-get-width-and-height-of-an-object/1490
     def calculateDimensionsAndOffset(self):
         pt1, pt2 = self.model.getTightBounds()

@@ -1,6 +1,3 @@
-# Adapted from https://discourse.panda3d.org/t/another-camera-controller-orbit-style/11545/2
-
-# Core imports
 from panda3d.core import *
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.DirectObject import DirectObject
@@ -37,10 +34,6 @@ class CameraController(DirectObject):
         base.camera.lookAt(self.camAnchor)
         
     def setupInput(self):
-        #self.accept("mouse1", self.setMove, [True])
-        #self.accept("mouse1-up", self.setMove, [False])
-        #self.accept("mouse2", self.setZoom, [True])
-        #self.accept("mouse2-up", self.setZoom, [False])
         self.accept("mouse1", self.setOrbit, [True])
         self.accept("mouse1-up", self.setOrbit, [False])
 
